@@ -1,0 +1,2 @@
+{"url": "https://store.bricklink.com/4BricksNGiggles?#/shop?", "minBuy": 0.0, "prices": [-1.0, 0.05, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0], "quantities": [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
+{"url": "https://store.bricklink.com/MomMar68?#/shop?", "minBuy": 0.0, "prices": [0.99, -1.0, -1.0, -1.0, -1.0, 0.09, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 0.1, 0.1], "quantities": [2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1]}

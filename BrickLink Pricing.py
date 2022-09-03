@@ -3,6 +3,7 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 from tqdm import tqdm
+import json
 import time
 
 options = Options()
@@ -187,13 +188,19 @@ class MemoryTable:
 class Seller:
     #initializes the url, prices and quantities and runs get_prices
     def __init__(self, url, itemIds, colors):
-        global session
-        self.url = url
-        self.prices = []
-        self.quantities = []
-        self.minBuy = float(0)
+        if (len(itemIds) == 0):
+            jsn = json.loads(url)
+            self.url = jsn["url"]
+            self.prices = jsn["prices"]
+            self.quantities = jsn["quantities"]
+            self.minBuy = jsn["minBuy"]
+        else:
+            self.url = url
+            self.prices = []
+            self.quantities = []
+            self.minBuy = float(0)
 
-        self.get_prices(itemIds, colors)
+            self.get_prices(itemIds, colors)
 
     #scrapes through the seller's store page for each item and collects the information
     def get_prices(self, itemIds, colors):
@@ -230,6 +237,15 @@ class Seller:
         print(self.url + "      $" + str(self.minBuy))
         print(self.prices)
         print(self.quantities)
+
+    def json(self):
+        output = {
+            "url": self.url,
+            "minBuy": self.minBuy,
+            "prices": self.prices,
+            "quantities": self.quantities
+        }
+        return json.dumps(output)
 
     def priceOf(self, input, length, quantitiesNeeded):
         binary = bin(input).replace("0b", "")
@@ -268,17 +284,28 @@ def Find_Sellers(itemIds, colors, quantities, amountOfItemsSearched, sellersPerI
         source_code = content.get_attribute("outerHTML")
         soup = BeautifulSoup(source_code, 'html.parser')
 
-        with open('c:/Python310/html_source_code.txt', 'w', encoding="utf-8") as f:
-            f.write(str(soup.find_all('tr', class_="pciItemContents")))
-
         storeurls = []
         for link in soup.find_all('tr', class_="pciItemContents"):
             storeurls.append(str(link))
 
-        for store in range(min(sellersPerItem, len(storeurls))):
-            storeurls[store] = "https:" + storeurls[store][storeurls[store].find("//store.bricklink.com/"):storeurls[store].find("itemID=")] + "#/shop?"
-            stores.append(Seller(storeurls[store], itemIds, colors))
+        if (True):
+            file = open("output.txt", "r")
+            while True:
+                jsonString = str(file.readline())
+                print(jsonString)
+                if not jsonString:
+                    break
+                stores.append(Seller(jsonString, [], []))
+        else:
+            file = open("output.txt", "w")
+            for store in range(min(sellersPerItem, len(storeurls))):
+                storeurls[store] = "https:" + storeurls[store][storeurls[store].find("//store.bricklink.com/"):storeurls[store].find("itemID=")] + "#/shop?"
+                stores.append(Seller(storeurls[store], itemIds, colors))
 
+                fileText = file.write(stores[store].json() + "\n")
+            
+
+    file.close()
     browser.close()
     return stores
     
@@ -286,11 +313,12 @@ def Find_Sellers(itemIds, colors, quantities, amountOfItemsSearched, sellersPerI
 itemIds = ["6040", "41531", "41531", "65768", "42022", "42023", "41747", "41748", "42021", "41751", "42022", "42023", "41747", "41748"]   #["6040", "41531", "41531", "65768", "42022", "42023", "41747", "41748", "42021", "41751", "42022", "42023", "41747", "41748"] 
 colors = [3, 3, 5, 11, 5, 5, 7, 7, 3, 14, 3, 7, 3, 3] #[3, 3, 5, 11, 5, 5, 7, 7, 3, 14, 3, 7, 3, 3]
 quantities = [1, 5, 1, 12, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1] #[1, 5, 1, 12, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1]
-amountOfItemsSearched = len(itemIds) - 5
+amountOfItemsSearched = 1# len(itemIds)
 sellersPerItem = 2
 validStores = Find_Sellers(itemIds, colors, quantities, amountOfItemsSearched, sellersPerItem)
+for store in validStores:
+    store.print()
 
-print(len(validStores))
 memory = MemoryTable(len(validStores), len(itemIds))
 for seller in range(len(validStores)):
     memory.append(validStores[seller], seller, quantities)
