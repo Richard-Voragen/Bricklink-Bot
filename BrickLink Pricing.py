@@ -265,19 +265,10 @@ class Seller:
         return(output)
 
 def Find_Sellers(itemIds, colors, quantities, amountOfItemsSearched, sellersPerItem):
-    prices1 = [
-        [0.22, 0.1, 0.02, 0.05, 0.10, 0.2, 1.2, 0.05, 0.1, 0.22, 0.13, 0.5, 0.1, 0.01, 0.022],
-        [0.02, 0.38, 0.26, 0.51, 0.15, 0.12, 0.06, 0.5, 0.05, 0.15, 0.08, 0.1, 0.2, 0.2, 0.54],
-        [0.313, 0.259, 0.178, 0.149, 0.08, 0.15, 0.4, 0.08, 0.05, 0.63, 0.4, 0.04, 0.8, 0.05, 0.04]
-    ]
-    quantities1 = [
-        [500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500],
-        [500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500],
-        [500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500]
-    ]
     stores = []
     for item in tqdm(range(min(amountOfItemsSearched, len(itemIds)))):
-        url = "https://www.bricklink.com/v2/catalog/catalogitem.page?P=" + str(itemIds[item]) + "&name=Brick%201%20x%201&category=%5BBrick%5D#T=S&C=85&O={\"color\":" + str(colors[item]) + ",\"minqty\":\"" + str(quantities[item]) + "\",\"loc\":\"US\",\"ca\":\"1\",\"iconly\":0}"
+        NoMin = "\"nmp\":1,"
+        url = "https://www.bricklink.com/v2/catalog/catalogitem.page?P=" + str(itemIds[item]) + "&name=Brick%201%20x%201&category=%5BBrick%5D#T=S&C=" + str(colors[item]) + "&O={\"color\":" + str(colors[item]) + ",\"minqty\":\"" + str(quantities[item]) + "\"," + NoMin + "\"loc\":\"US\",\"ca\":\"1\",\"iconly\":0}"
         browser.get(url)
         time.sleep(2)
         content=browser.find_element("xpath", "//*")
@@ -288,7 +279,7 @@ def Find_Sellers(itemIds, colors, quantities, amountOfItemsSearched, sellersPerI
         for link in soup.find_all('tr', class_="pciItemContents"):
             storeurls.append(str(link))
 
-        if (True):
+        if (False):
             file = open("output.txt", "r")
             while True:
                 jsonString = str(file.readline())
@@ -297,12 +288,15 @@ def Find_Sellers(itemIds, colors, quantities, amountOfItemsSearched, sellersPerI
                     break
                 stores.append(Seller(jsonString, [], []))
         else:
-            file = open("output.txt", "w")
             for store in range(min(sellersPerItem, len(storeurls))):
                 storeurls[store] = "https:" + storeurls[store][storeurls[store].find("//store.bricklink.com/"):storeurls[store].find("itemID=")] + "#/shop?"
                 stores.append(Seller(storeurls[store], itemIds, colors))
 
-                fileText = file.write(stores[store].json() + "\n")
+    fileText = ""      
+    file = open("output.txt", "w")
+    for store in range(len(stores)):
+        fileText += stores[store].json() + "\n"
+    file.write(fileText)
             
 
     file.close()
@@ -310,14 +304,14 @@ def Find_Sellers(itemIds, colors, quantities, amountOfItemsSearched, sellersPerI
     return stores
     
 
-itemIds = ["6040", "41531", "41531", "65768", "42022", "42023", "41747", "41748", "42021", "41751", "42022", "42023", "41747", "41748"]   #["6040", "41531", "41531", "65768", "42022", "42023", "41747", "41748", "42021", "41751", "42022", "42023", "41747", "41748"] 
-colors = [3, 3, 5, 11, 5, 5, 7, 7, 3, 14, 3, 7, 3, 3] #[3, 3, 5, 11, 5, 5, 7, 7, 3, 14, 3, 7, 3, 3]
-quantities = [1, 5, 1, 12, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1] #[1, 5, 1, 12, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1]
-amountOfItemsSearched = 1# len(itemIds)
+itemIds = ["47753", "87752", "41883", "2418a", "23448", "45301", "42060", "42061", "41765", "41764", "41748", "41747", "65768", "41531", "13547", "85970", "44676"]
+colors = [11, 13, 13, 14, 13, 11, 85, 85, 85, 85, 85, 85, 11, 11, 85, 85, 85]
+quantities = [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 12, 12, 2, 5, 15]
+amountOfItemsSearched = len(itemIds)
 sellersPerItem = 2
 validStores = Find_Sellers(itemIds, colors, quantities, amountOfItemsSearched, sellersPerItem)
-for store in validStores:
-    store.print()
+""" for store in validStores:
+    store.print() """
 
 memory = MemoryTable(len(validStores), len(itemIds))
 for seller in range(len(validStores)):
